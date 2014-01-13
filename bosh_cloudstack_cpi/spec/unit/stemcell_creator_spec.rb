@@ -38,7 +38,7 @@ describe Bosh::CloudStackCloud::StemcellCreator do
       image_params = {
           :displaytext => "stemcell-name 0.7.0",
           :name => "BOSH-random",
-          :ostypeid => 2,
+          :ostypeid => 3,
           :snapshotid => "snap-xxxxxxxx",
       }
 
@@ -70,6 +70,21 @@ describe Bosh::CloudStackCloud::StemcellCreator do
   describe "#image_params" do
     it "should construct correct image params" do
       SecureRandom.stub(:hex).and_return("random")
+      params = described_class.new(cloud.compute.zones.first, stemcell_properties, cloud).image_params("id", cloud.compute)
+
+      params[:displaytext].should == "stemcell-name 0.7.0"
+      params[:name].should == "BOSH-random"
+      params[:ostypeid].should == 3
+      params[:snapshotid].should == "id"
+    end
+
+    it "should construct image params with Ubuntu 10.04 when 12.04 is not available" do
+      SecureRandom.stub(:hex).and_return("random")
+
+      cloud = mock_cloud do |compute|
+        compute.stub(:ostypes).and_return([double("type1", :description => 'Ubuntu 8.04 (64-bit)', :id => 1),
+                                         double("type2", :description => 'Ubuntu 10.04 (64-bit)', :id => 2)])
+      end
       params = described_class.new(cloud.compute.zones.first, stemcell_properties, cloud).image_params("id", cloud.compute)
 
       params[:displaytext].should == "stemcell-name 0.7.0"

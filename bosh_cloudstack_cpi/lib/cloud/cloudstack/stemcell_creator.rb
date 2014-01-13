@@ -85,7 +85,14 @@ module Bosh::CloudStackCloud
     def image_params(snapshot_id, compute)
       architecture_bit = {"x86" => "32", "x86_64" => "64"}[stemcell_properties["architecture"]]
       ostype = compute.ostypes.find do |ostype|
-        ostype.description == "Ubuntu 10.04 (64-bit)"
+        ostype.description == "Ubuntu 12.04 (64-bit)"
+      end
+
+      # Since CloudStack 4.0 doesn't have Ubuntu 12.04, fallback to 10.04
+      unless ostype
+        ostype = compute.ostypes.find do |ostype|
+          ostype.description == "Ubuntu 10.04 (64-bit)"
+        end
       end
 
       params = {
